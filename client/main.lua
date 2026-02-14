@@ -1,6 +1,6 @@
 ESX = exports.es_extended:getSharedObject()
 local ped = nil
-IsPanelOpen = false
+local IsPanelOpen = false
 
 CreateThread(function()
     local pm = Config.NPCQuestPed.pedModel
@@ -11,6 +11,8 @@ CreateThread(function()
 
     ped = CreatePed(4, pm, pc.x, pc.y, pc.z, Config.NPCQuestPed.pedHeading, false, true)
     FreezeEntityPosition(ped, true)
+    SetEntityInvincible(ped, true)
+    SetBlockingOfNonTemporaryEvents(ped, true)
 
     exports.ox_target:addLocalEntity(ped, {
         label = 'Container Robbery',
@@ -19,11 +21,18 @@ CreateThread(function()
         distance = 4.0,
         debug = true,
         onSelect = function(data)
-            SendNUIMessage({
-                action = 'open'
-            })
-            IsPanelOpen = not IsPanelOpen
-            SetNuiFocus(IsPanelOpen, IsPanelOpen)
+            ESX.TriggerServerCallback('Lynx_Containerrobbery:PoliceJob', function(IsPolice)
+                if IsPolice then
+                    SendNUIMessage({
+                        action = 'open',
+                        list = Config.Container
+                    })
+                    IsPanelOpen = not IsPanelOpen
+                    SetNuiFocus(IsPanelOpen, IsPanelOpen)
+                else
+                    ESX.ShowNotification('You must be a police officer to access this.')
+                end
+            end)
         end
     })
 end)
@@ -43,5 +52,6 @@ AddEventHandler('onResourceStop', function(resourceName)
     end
     if ped ~= nil then
         DeleteEntity(ped)
+        ped = nil
     end
 end)

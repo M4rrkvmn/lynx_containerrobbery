@@ -6,6 +6,10 @@ Config.NPCQuestPed = {
     pedHeading = 0
 }
 
+Config.PoliceJob = {
+    'police'
+}
+
 Config.Container = {
     [1] = {
         name = 'Kezdő Container',
