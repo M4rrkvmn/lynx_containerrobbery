@@ -97,6 +97,7 @@ h1 {
 .rcontainer p {
     margin: 0;
     padding: 0.5vh 0.5vw; 
+    font-size: 1.6vh;
     font-family: 'Arial', sans-serif;   
 }
 
@@ -123,4 +124,13 @@ h1 {
 .rcontainer button:active {
     background-color: rgb(150, 150, 150);
     transform: scale(0.95);
+}
+
+#xplevel {
+    font-family: 'Arial', sans-serif;
+    margin-top: 0;
+    font-size: 3vh;
+    position: absolute;
+    top: 13.5vh;
+    color: white;
 }

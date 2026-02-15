@@ -4,6 +4,7 @@ window.addEventListener('message', function (event) {
     if (e.action === 'open') {
         RenderContainers(e.list)
         $('.container').fadeIn(400)
+        $('#xp-value').text(e.xp)
     } else if (e.action === 'close') {
         $('.container').fadeOut(400)
     }

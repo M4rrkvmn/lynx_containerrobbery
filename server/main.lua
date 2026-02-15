@@ -42,8 +42,10 @@ end)
 local MySQL = exports.ghmattimysql
 
 ESX.RegisterServerCallback('Lynx_Containerrobbery:GetXpLevel', function(src, cb, param1, param2)
+    local xPlayer = ESX.GetPlayerFromId(src)
+    if not xPlayer then return end
     cb(MySQL.Sync.fetchScalar('SELECT xp FROM Lynx_Containerrobbery WHERE identifier = @identifier', {
-        ['@identifier'] = ESX.GetPlayerData().identifier
+        ['@identifier'] = xPlayer.identifier()
     }))
 end)
 
@@ -61,32 +63,47 @@ RegisterNetEvent('Lynx_Containerrobbery:Giveloot', function(cid, id, loot)
         end
     end
 
+    local item = ''
+
     if addItem then
         for _, v in ipairs(loot) do
+            item = item .. v.item .. ' ['..v.count..'], '
             xPlayer.addInventoryItem(v.item, v.count)
         end
     else
         print('Lynx_Containerrobbery: Possible Exploit Attempt - Player: ' .. xPlayer.identifier)
-        --Security measure to prevent exploits, you can log this or take action against the player
         LynxAntiCheatSecurity(source)
     end
-
-    MySQL.Async.execute('UPDATE Lynx_Containerrobbery SET xp = xp + @xp WHERE identifier = @identifier', {
-        ['@xp'] = Config.Container[id].xpadd,
-        ['@identifier'] = ESX.GetPlayerData().identifier
-    })
+    
+    LynxLogSecurity('Name: '..GetPlayerName(source)..'\nIdentifier:'.. xPlayer.identifier .. '\nAction: Completed Container Quest\nItem: '..item..'')
 end)
 
-AddEventHandler('playerJoined', function(source)
+AddEventHandler('esx:playerLoaded', function(xPlayer)
+    if not xPlayer then return end
 
     MySQL.Async.fetchScalar('SELECT identifier FROM Lynx_Containerrobbery WHERE identifier = @identifier', {
-        ['@identifier'] = ESX.GetPlayerData().identifier
+        ['@identifier'] = xPlayer.identifier
     }, function(result)
         if not result then
             MySQL.Async.execute('INSERT INTO Lynx_Containerrobbery (identifier, xp) VALUES (@identifier, @xp)', {
-                ['@identifier'] = ESX.GetPlayerData().identifier,
+                ['@identifier'] = xPlayer.identifier,
                 ['@xp'] = 0
             })
         end
     end)
+end)
+
+RegisterNetEvent('Lynx_Containerrobbery:AddXp', function(id,xp)
+    local xPlayer = ESX.GetPlayerFromId(source)
+    local xpAdd = Config.Container[id]
+    if not xPlayer then return end
+
+    if xpAdd ~= xp then
+        return
+    end
+
+    MySQL.Async.execute('UPDATE Lynx_Containerrobbery SET xp = xp + @xp WHERE identifier = @identifier', {
+        ['@xp'] = xp,
+        ['@identifier'] = xPlayer.identifier()
+    })
 end)

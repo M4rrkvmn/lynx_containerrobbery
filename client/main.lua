@@ -45,13 +45,17 @@ CreateThread(function()
                         }
                         table.insert(ContainerData, ContainerList)
                     end
-
-                    SendNUIMessage({
-                        action = 'open',
-                        list = ContainerData
-                    })
-                    IsPanelOpen = not IsPanelOpen
-                    SetNuiFocus(IsPanelOpen, IsPanelOpen)
+                    ESX.TriggerServerCallback('Lynx_Containerrobbery:GetXpLevel', function(xplevel)
+                        if xplevel then
+                            SendNUIMessage({
+                                action = 'open',
+                                list = ContainerData,
+                                xp = xplevel
+                            })
+                            IsPanelOpen = not IsPanelOpen
+                            SetNuiFocus(IsPanelOpen, IsPanelOpen)
+                        end
+                    end)
                 else
                     ESX.ShowNotification('You are not allowed to access this.')
                 end
@@ -71,19 +75,14 @@ end)
 
 RegisterNUICallback('StartQuest', function(data, cb)
     local Container = Config.Container[data.id]
-    local xplevel = 0
     ESX.TriggerServerCallback('Lynx_Containerrobbery:GetXpLevel', function(xplevel)
-        if xplevel ~= nil or xplevel ~= 0 then
-            xplevel = xplevel
+        if xplevel >= Container.xp then
+            cb({ success = true, message = 'Quest started successfully.' })
+            TriggerServerEvent('Lynx_Containerrobbery:StartQuest', data.id)
+        else
+            cb({ success = false, message = 'You do not have enough XP to start this quest.' })
         end
     end)
-
-    if xplevel < Container.xp then
-        cb({ success = false, message = 'You do not have enough XP to start this quest.' })
-    else
-        cb({ success = true, message = 'Quest started successfully.' })
-        TriggerServerEvent('Lynx_Containerrobbery:StartQuest', data.id)
-    end
 end)
 
 RegisterNetEvent('Lynx_Containerrobbery:StartQuest', function(id)
@@ -116,7 +115,7 @@ RegisterNetEvent('Lynx_Containerrobbery:StartQuest', function(id)
 
         exports.ox_target:addLocalEntity(prop, {
             label = 'Search Container',
-            name = 'lynx_containerrobbery:searchcontainer'..cid,
+            name = 'lynx_containerrobbery:searchcontainer' .. cid,
             icon = 'fas fa-search',
             distance = 2.0,
             debug = true,
@@ -141,6 +140,18 @@ RegisterNetEvent('Lynx_Containerrobbery:StartQuest', function(id)
                         }) then
                         ESX.ShowNotification('You searched the container and found some loot!')
 
+                        local addXp = true
+
+                        for k, v in pairs(Containerprop) do
+                            if DoesEntityExist(v) then
+                                addXp = false
+                                break
+                            end
+                        end
+
+                        if addXp then
+                            TriggerServerEvent('Lynx_Containerrobbery:AddXp', id, Container.xpadd)
+                        end
 
                         TriggerServerEvent('Lynx_Containerrobbery:GiveLoot', cid, id, item)
                         DeleteEntity(prop)
