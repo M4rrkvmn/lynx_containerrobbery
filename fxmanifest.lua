@@ -8,7 +8,7 @@ ui_page 'html/index.html'
 files {
     'html/index.html',
     'html/src/style.css',
-    'html/src/script.js',
+    'html/src/app.js',
 }
 
 server_script {
@@ -20,10 +20,13 @@ client_script {
 }
 
 shared_script {
-    '@es_extended/imports.lua'
+    '@es_extended/imports.lua',
+    '@oxmysql/lib/MySQL.lua',
+    'config.lua'
 }
 
 dependencies {
     'es_extended',
-    'ox_target'
+    'ox_target',
+    'oxmysql'
 }
