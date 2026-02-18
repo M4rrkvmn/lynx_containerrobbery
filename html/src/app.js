@@ -1,12 +1,22 @@
+let IsListRendered = false
+
 window.addEventListener('message', function (event) {
     const e = event.data
 
-    if (e.action === 'open') {
-        RenderContainers(e.list)
+    if (e.action === 'open') {        
         $('.container').fadeIn(400)
+
         $('#xp-value').text(e.xp)
+
+        if (!IsListRendered) {
+            RenderContainers(e.list)
+            IsListRendered = true
+        }
     } else if (e.action === 'close') {
         $('.container').fadeOut(400)
+    } else if (e.action === 'resetbutton') {
+        $(`#button-${e.id}`).text('Küldetés felvétele')
+        $(`#button-${e.id}`).css('background-color', 'rgb(83, 83, 83)')
     }
 })
 
@@ -33,25 +43,24 @@ function RenderContainers(list) {
 }
 
 function StartQuest(id) {
-    if ($(`#container-${id}`).text() === 'Küldetés felvétele') {
+    console.log($(`#button-${id}`).text())
+    if ($(`#button-${id}`).text() === 'Küldetés felvétele') {
         $.post(`https://${GetParentResourceName()}/StartQuest`, JSON.stringify({
             id: id
         }), function (data) {
             if (data.success) {
-                alert(data.message)
                 text = 'Küldetés megszakítása'
-                $(`#container-${id}`).text(text)
+                $(`#button-${id}`).text(text)
                 $(`#button-${id}`).css('background-color', 'red')
             }
         })
-    } else if ($(`#container-${id}`).text() === 'Küldetés megszakítása') {
+    } else if ($(`#button-${id}`).text() === 'Küldetés megszakítása') {
         $.post(`https://${GetParentResourceName()}/BreakingQuest`, JSON.stringify({
             id:id
         }), function (data) {
             if (data.success) {
-                alert(data.message)
                 text = 'Küldetés felvétele'
-                $(`#container-${id}`).text(text)
+                $(`#button-${id}`).text(text)
                 $(`#button-${id}`).css('background-color', 'rgb(83, 83, 83)')
             }
         })
