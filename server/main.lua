@@ -1,5 +1,10 @@
 local QuestActive = {}
 
+if Config.OpenMenu == 'tablet' then
+    ESX.RegisterUsableItem(Config.TabletItem, function(source)
+       TriggerClientEvent('Lynx_Containerrobbery:OpenPanelwithTablet', source)
+    end)
+end
 
 ESX.RegisterServerCallback('Lynx_Containerrobbery:PoliceJob', function(source, cb)
     local xPlayer = ESX.GetPlayerFromId(source)
@@ -18,8 +23,8 @@ end)
 ESX.RegisterServerCallback('Lynx_Containerrobbery:GetXpLevel', function(src, cb, param1, param2)
     local xPlayer = ESX.GetPlayerFromId(src)
     if not xPlayer then return end
-    local xplevel =MySQL.Sync.fetchScalar('SELECT xp FROM lynx_containerrobbery WHERE identifier = @identifier', {
-        ['@identifier'] = xPlayer.getIdentifier()
+    local xplevel =MySQL.Sync.fetchScalar('SELECT xp FROM lynx_containerrobbery WHERE identifier =?', {
+         xPlayer.getIdentifier()
     })
     cb(xplevel)
 end)
@@ -45,14 +50,12 @@ RegisterNetEvent('Lynx_Containerrobbery:Giveloot', function(cid, id, loot)
     local xPlayer = ESX.GetPlayerFromId(source)
     local addItem = true
     if not xPlayer then return end
-    TriggerClientEvent('esx:showNotification', source, 'Processing container loot...')
     if not QuestActive[source] then
         print('Lynx_Containerrobbery: Possible Exploit Attempt - Player: ' .. xPlayer.getIdentifier())
         LynxAntiCheatSecurity(source)
         return
     end
 
-    TriggerClientEvent('esx:showNotification', source, 'Processing container loot2...')
     for _, v in ipairs(loot) do
         for _, lv in ipairs(Config.Container[id].container[cid].loot) do
             if v.item ~= lv.item and v.count ~= lv.count then
@@ -65,7 +68,6 @@ RegisterNetEvent('Lynx_Containerrobbery:Giveloot', function(cid, id, loot)
 
     local item = ''
 
-    TriggerClientEvent('esx:showNotification', source, 'Processing container loot3...')
     if addItem then
         for _, v in ipairs(loot) do
             item = item .. v.item .. ' [' .. v.count .. '], '
@@ -89,17 +91,18 @@ RegisterCommand('getIdentifier', function(source, args, rawCommand)
 end,false)
 
 AddEventHandler('esx:playerLoaded', function(source)
-    local xPlayer = ESX.GetPlayerFromId(source)
+    local _source = source
+    local xPlayer = ESX.GetPlayerFromId(_source)
     if not xPlayer then return end
 
-    local result = MySQL.Sync.fetchScalar('SELECT identifier FROM lynx_containerrobbery WHERE identifier = @identifier', {
-        ['@identifier'] = xPlayer.getIdentifier()
+    local result = MySQL.Sync.fetchScalar('SELECT identifier FROM lynx_containerrobbery WHERE identifier =?', {
+        xPlayer.getIdentifier()
     })
 
     if not result then
-        MySQL.Sync.execute('INSERT INTO lynx_containerrobbery (identifier, xp) VALUES (@identifier, @xp)', {
-            ['@identifier'] = xPlayer.getIdentifier(),
-            ['@xp'] = 0
+        MySQL.Sync.execute('INSERT INTO lynx_containerrobbery (identifier, xp) VALUES (?,?)', {
+            xPlayer.getIdentifier(),
+            0
         })
     end
 end)
@@ -108,22 +111,20 @@ RegisterNetEvent('Lynx_Containerrobbery:AddXp', function(id)
     local xp = Config.Container[id].xpadd
     local _source = source
     local xPlayer = ESX.GetPlayerFromId(_source)
+    
     if not xPlayer then return end
-    TriggerClientEvent('esx:showNotification', _source, 'Processing XP...')
+
     if not QuestActive[_source] then
         print('Lynx_Containerrobbery: Possible Exploit Attempt - Player: ' .. xPlayer.getIdentifier())
         LynxAntiCheatSecurity(_source)
         return
     end
 
-    local currentxp = MySQL.Sync.fetchScalar('SELECT xp FROM lynx_containerrobbery WHERE identifier = @identifier', {
-        ['@identifier'] = xPlayer.getIdentifier()
+    local currentxp = MySQL.Sync.fetchScalar('SELECT xp FROM lynx_containerrobbery WHERE identifier = ?', {
+        xPlayer.getIdentifier()
     })
 
     local addXp = currentxp + xp
-
-    TriggerClientEvent('esx:showNotification', _source, 'Processing XP2...'.. currentxp .. 'XP to add: ' .. xp .. ' Total XP: ' .. addXp)
-
 
     MySQL.Sync.execute('UPDATE lynx_containerrobbery SET xp = ? WHERE identifier = ?', {
          addXp,

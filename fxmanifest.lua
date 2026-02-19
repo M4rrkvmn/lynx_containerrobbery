@@ -2,7 +2,7 @@ fx_version 'cerulean'
 game 'gta5'
 lua54 'yes'
 
-author 'Mrk'
+author 'lynxd3v'
 
 ui_page 'html/index.html'
 

@@ -10,6 +10,9 @@ Config.PoliceJob = {
     'police'
 }
 
+Config.OpenMenu = 'tablet' -- 'tablet' item or 'pedModel'
+Config.TabletItem = 'tablet' -- Item to Open Menu if OpenMenu is set to 'tablet'
+
 Config.Webhook = 'https://discord.com/api/webhooks/1473708160589103399/j5tvoZxh7xPN7SYy9DazNAdhjiKcI16sr36FPox00lL-FPvoK1GmGHADbsPNd5KUuDNE' -- Webhook for Security Logs, you can use this to log possible exploits or cheaters
 
 Config.Container = {
