@@ -6,7 +6,7 @@ local QuestActive = false
 local tabletModel = 'prop_cs_tablet'
 local tabletprop = nil
 local cooldown = 0
-local cooldownTime = 360000 -- 1 hour cooldown, adjust as needed
+local cooldownTime = 3600000 -- 1 hour cooldown for container robbery, adjust as needed
 
 CreateThread(function()
     if Config.OpenMenu == 'pedModel' then
@@ -149,7 +149,7 @@ RegisterNUICallback('StartQuest', function(data, cb)
             if xplevel >= Container.xp then
                 if GetGameTimer() < cooldown then
                     cb({ success = false, message = 'You are on cooldown.' })
-                    ESX.ShowNotification('You are on cooldown. Please wait ' .. math.ceil((cooldown - GetGameTimer()) / 1000) .. ' seconds.')
+                    ESX.ShowNotification('You are on cooldown. Please wait ' .. math.ceil(((cooldown - GetGameTimer()) / 1000) / 60) .. ' minutes.')
                 else
                     cb({ success = true, message = 'Quest started successfully.' })
                     TriggerServerEvent('Lynx_Containerrobbery:StartQuest', data.id)
@@ -206,7 +206,7 @@ RegisterNetEvent('Lynx_Containerrobbery:StartQuest', function(id)
                 if success then
                     TriggerServerEvent('Lynx_Containerrobbery:StartContainerRobberyBlip', id, cid)
                     if lib.progressCircle({
-                            duration = 2000, -- 1 minute
+                            duration = 60000, -- 1 minute
                             position = 'bottom',
                             label = 'Breaking Container...',
                             useWhileDead = false,
